@@ -1,0 +1,11 @@
+<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="popup.css">
+<header><h1>PromptShelf</h1><input id="search" type="search" placeholder="Search prompts..." autofocus /></header>
+<section id="add-form"><input id="new-title" placeholder="Title (optional)"><textarea id="new-text" rows="3" placeholder="New prompt..."></textarea>
+<div class="row"><input id="new-tags" placeholder="tags (comma separated)"><select id="new-category"><option value="other">other</option><option value="favorite">favorite</option></select><button id="add-btn">Add</button></div></section>
+<main>
+<details open><summary><span>Favorite</span><span class="count" data-for="favorite">0</span></summary><ul class="list" data-cat="favorite"></ul></details>
+<details open><summary><span>Recent</span><span class="count" data-for="recent">0</span></summary><ul class="list" data-cat="recent"></ul></details>
+<details open><summary><span>Other</span><span class="count" data-for="other">0</span></summary><ul class="list" data-cat="other"></ul></details>
+</main>
+<footer><button id="export-btn">Export</button><label class="import"><input id="import-file" type="file" accept="application/json" hidden/><span>Import</span></label></footer>
+<script type="module" src="popup.js"></script>
