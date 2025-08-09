@@ -45,10 +45,28 @@ function render(){
   }
 }
 
-async function load(){ const {prompts=[]}=await chrome.storage.local.get("prompts"); prompts.sort((a,b) => (b.updatedAt||0)-(a.updatedAt||0)); state.prompts = prompts; render(); }
+async function load(){ 
+  const {prompts=[]}=await chrome.storage.local.get("prompts"); 
+  prompts.sort((a,b) => (b.updatedAt||0)-(a.updatedAt||0)); 
+  state.prompts = prompts; 
+  await loadDraft(); 
+  render(); 
+}
 async function save(){ await chrome.storage.local.set({prompts: state.prompts}); }
 const findById = id => state.prompts.find(p=>p.id===id);
 function toRecentTop(p){ p.category="recent"; p.updatedAt=Date.now(); state.prompts=state.prompts.filter(x=>x.id!==p.id).concat([p]); }
+
+async function loadDraft(){
+  const { draftPrompt } = await chrome.storage.local.get("draftPrompt");
+  if (draftPrompt) {
+    $("#new-title").value = draftPrompt.title || "";
+    $("#new-text").value = draftPrompt.text || "";
+    $("#new-tags").value = (draftPrompt.tags||[]).join(", ");
+    $("#new-category").value = draftPrompt.category || "other";
+    // Focus the text area to make it clear this is for editing
+    $("#new-text").focus();
+  }
+}
 
 chrome.runtime.onMessage.addListener((msg)=>{ if(msg?.type==="PROMPTS_UPDATED"){ load(); } });
 
@@ -73,6 +91,8 @@ $("#add-btn").addEventListener("click", async ()=>{
   const category=$("#new-category").value; if(!text) return;
   const p={id:crypto.randomUUID(), title, text, tags, category, updatedAt:Date.now()};
   state.prompts.push(p); await save();
+  // Clear draft after saving
+  await chrome.storage.local.remove("draftPrompt");
   $("#new-title").value=""; $("#new-text").value=""; $("#new-tags").value=""; $("#new-category").value="other"; render();
 });
 $("#export-btn").addEventListener("click", async ()=>{

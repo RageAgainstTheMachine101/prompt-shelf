@@ -239,8 +239,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     await chrome.storage.local.set({draftPrompt:{title, text, tags:[], category:"other"}});
     try {
       if (chrome.sidePanel && chrome.sidePanel.open) {
-        if (tab && tab.id && tab.windowId) {
-          await chrome.sidePanel.setOptions({ tabId: tab.id, path: "sidepanel.html", enabled: true });
+        if (tab && tab.windowId) {
           await chrome.sidePanel.open({ windowId: tab.windowId });
           console.log('[PromptShelf][BG] ps-open: sidepanel opened');
           return;
@@ -249,9 +248,26 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     } catch (e) {
       console.warn('[PromptShelf][BG] ps-open: sidepanel open failed, will fallback', e);
     }
-    chrome.windows.create({ url: "editor.html", type: "popup", width: 420, height: 600 });
+    chrome.windows.create({ url: "sidepanel.html", type: "popup", width: 420, height: 600 });
     console.log('[PromptShelf][BG] ps-open: popup editor opened');
   }
+});
+
+chrome.action.onClicked.addListener(async (tab) => {
+  console.log('[PromptShelf][BG] action.onClicked (extension icon)', { tabId: tab && tab.id, windowId: tab && tab.windowId });
+  try {
+    if (chrome.sidePanel && chrome.sidePanel.open) {
+      if (tab && tab.windowId) {
+        await chrome.sidePanel.open({ windowId: tab.windowId });
+        console.log('[PromptShelf][BG] extension icon: sidepanel opened');
+        return;
+      }
+    }
+  } catch (e) {
+    console.warn('[PromptShelf][BG] extension icon: sidepanel open failed, will fallback to popup', e);
+  }
+  chrome.windows.create({ url: "popup.html", type: "popup", width: 420, height: 600 });
+  console.log('[PromptShelf][BG] extension icon: popup opened as fallback');
 });
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -281,14 +297,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         if(chrome.sidePanel && chrome.sidePanel.open){
           const [tab]=await chrome.tabs.query({active:true,currentWindow:true});
           if(tab && tab.windowId){
-            await chrome.sidePanel.setOptions({tabId:tab.id,path:"sidepanel.html",enabled:true});
             await chrome.sidePanel.open({windowId:tab.windowId});
             sendResponse({ok:true, opened:"sidepanel"});
             console.log('[PromptShelf][BG] open: sidepanel opened and responded ok');
             return;
           }
         }
-        chrome.windows.create({url:"editor.html",type:"popup",width:420,height:600});
+        chrome.windows.create({url:"sidepanel.html",type:"popup",width:420,height:600});
         sendResponse({ok:true, opened:"popup"});
         console.log('[PromptShelf][BG] open: popup editor opened and responded ok');
       } catch (e) { console.error('[PromptShelf][BG] open error', e); sendResponse({ok:false, error:String(e)}); }

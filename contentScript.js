@@ -90,7 +90,7 @@
   
   // Open editor fallback from CS (popup window)
   function openEditorPopupFallback(){
-    const url = chrome.runtime.getURL('editor.html');
+    const url = chrome.runtime.getURL('sidepanel.html');
     try {
       window.open(url, '_blank', 'width=420,height=600,noopener,noreferrer');
       return true;
